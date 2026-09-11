@@ -24,6 +24,10 @@ COPY ./base_image/faiss /tmp/faiss
 COPY ./base_image/patches /tmp/patches
 RUN cd /tmp/faiss && patch -p1 < /tmp/patches/0001-Skip-copying-vectors-to-flat-storage-during-CAGRA-to.patch
 RUN cd /tmp/faiss && patch -p1 < /tmp/patches/0002-Do-not-auto-widen-intermediate_graph_degree-when-eq.patch
+# cuVS 26.08 changed the CAGRA dataset API. Apply the compatibility patch
+# shipped by cuVS for FAISS v1.14.3.
+# https://github.com/rapidsai/cuvs/blob/v26.08.01/cpp/cmake/patches/faiss-1.14-cuvs-26.08.diff
+RUN cd /tmp/faiss && patch -p1 < /tmp/patches/0003-faiss-1.14-cuvs-26.08.patch
 COPY ./base_image/build_scripts/build-faiss.sh /tmp/build-faiss.sh
 
 RUN chown -R appuser:appuser /tmp
@@ -36,7 +40,7 @@ ENV PATH=$CONDA_DIR/bin:$PATH
 ENV CONDA_PLUGINS_AUTO_ACCEPT_TOS=yes
 
 #install some necessary dependencies
-RUN conda install -c conda-forge -y -q python=3.11 cmake=3.30.4 make=4.2 swig=4.0 "numpy<2" scipy=1.14 pytest=7.4 gflags=2.2 \
+RUN conda install -c conda-forge -y -q python=3.11 cmake=4.0.3 make=4.2 swig=4.0 "numpy>=2,<2.3" scipy=1.14 pytest=7.4 gflags=2.2 \
     && conda clean --all --yes
 RUN cmake --version
 
@@ -49,7 +53,7 @@ RUN conda install -y -q -c conda-forge gxx_linux-64=14.2 sysroot_linux-64=2.28 \
 
 # install all the dependencies we need for installing faiss
 # Ref: https://github.com/facebookresearch/faiss/blob/main/.github/actions/build_cmake/action.yml#L64
-RUN conda install -y -q libcuvs=26.06 cuda-nvcc=12.9 cuda-version=12.9 gxx_linux-64=12.4 -c rapidsai -c rapidsai-nightly -c conda-forge \
+RUN conda install -y -q libcuvs=26.08.01 cuda-nvcc=12.9 cuda-version=12.9 -c rapidsai -c conda-forge -c nvidia \
     && conda clean --all --yes
 
 # Execute steps to build faiss

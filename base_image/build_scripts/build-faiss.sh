@@ -19,7 +19,9 @@ cmake -B build \
     -DFAISS_OPT_LEVEL=generic \
     -DFAISS_ENABLE_C_API=OFF \
     -DFAISS_ENABLE_PYTHON=ON \
-    -DPYTHON_EXECUTABLE=$CONDA/bin/python \
+    -DPYTHON_EXECUTABLE="$CONDA_DIR/bin/python" \
+    -DCMAKE_CXX_COMPILER="$CONDA_DIR/bin/x86_64-conda-linux-gnu-c++" \
+    -DCMAKE_CUDA_HOST_COMPILER="$CONDA_DIR/bin/x86_64-conda-linux-gnu-c++" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_CUDA_ARCHITECTURES="${CUDA_ARCHS}" \
     -DFAISS_ENABLE_CUVS=ON \
